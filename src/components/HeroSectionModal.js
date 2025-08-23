@@ -11,8 +11,8 @@ const HeroSectionModal = ({ agentId, initialData, onClose, onSubmit }) => {
     imageUrl: '',
     AgentId: agentId
   });
-    const navigate = useNavigate();
-  
+  const navigate = useNavigate();
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000/api';
@@ -38,7 +38,7 @@ const HeroSectionModal = ({ agentId, initialData, onClose, onSubmit }) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    if ( !formData.AgentId) {
+    if (!formData.AgentId) {
       setError('section time out. Please login again.');
       navigate('/login');
       return;
@@ -51,7 +51,7 @@ const HeroSectionModal = ({ agentId, initialData, onClose, onSubmit }) => {
         // Create new hero section
         await axios.post(`${API_BASE_URL}/api/herosection`, formData);
       }
-      
+
       onSubmit();
       onClose();
     } catch (err) {
@@ -69,21 +69,21 @@ const HeroSectionModal = ({ agentId, initialData, onClose, onSubmit }) => {
           <h3 className="text-lg font-semibold text-gray-800">
             {initialData ? 'Edit Hero Section' : 'Create New Hero Section'}
           </h3>
-          <button 
+          <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
           >
             ✕
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6">
           {error && (
             <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg">
               {error}
             </div>
           )}
-          
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
@@ -96,7 +96,7 @@ const HeroSectionModal = ({ agentId, initialData, onClose, onSubmit }) => {
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Subtitle</label>
               <textarea
@@ -108,7 +108,7 @@ const HeroSectionModal = ({ agentId, initialData, onClose, onSubmit }) => {
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Action Text</label>
               <input
@@ -120,19 +120,28 @@ const HeroSectionModal = ({ agentId, initialData, onClose, onSubmit }) => {
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Action Link</label>
+
               <input
-                type="text" 
+                list="actionLinkOptions"
+                type="text"
                 name="actionLink"
                 value={formData.actionLink}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 required
               />
+
+              <datalist id="actionLinkOptions">
+                <option value="/contact" />
+                <option value="/blog" />
+                <option value="/life-insurance" />
+              </datalist>
             </div>
-            
+
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
               <input
@@ -145,7 +154,7 @@ const HeroSectionModal = ({ agentId, initialData, onClose, onSubmit }) => {
               />
             </div>
           </div>
-          
+
           <div className="mt-6 flex justify-end space-x-3">
             <button
               type="button"
@@ -157,9 +166,8 @@ const HeroSectionModal = ({ agentId, initialData, onClose, onSubmit }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className={`px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 ${
-                isLoading ? 'opacity-75 cursor-not-allowed' : ''
-              }`}
+              className={`px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 ${isLoading ? 'opacity-75 cursor-not-allowed' : ''
+                }`}
             >
               {isLoading ? 'Saving...' : 'Save'}
             </button>

@@ -27,7 +27,7 @@ export default function LoginPage() {
         return;
       }
 
-      const res = await axios.post('https://localhost:7024/api/agent/login', { email: userId, password });
+      const res = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/agent/login`, { email: userId, password });
 
       if (res.data.status === 200) {
         const { id, name } = res.data.data;

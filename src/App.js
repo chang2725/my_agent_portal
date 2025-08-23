@@ -1,20 +1,19 @@
-// src/App.js
+// App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
+import Dashboard from './pages/DashboardPage';
 
-// Protected Route Component
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+function ProtectedRoute({ children }) {
+  const { agent, loading } = useAuth();
   
-  if (!isAuthenticated()) {
-    return <Navigate to="/login" replace />;
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
   
-  return children;
-};
+  return agent ? children : <Navigate to="/login" replace />;
+}
 
 function App() {
   return (
@@ -26,11 +25,11 @@ function App() {
             path="/dashboard" 
             element={
               <ProtectedRoute>
-                <DashboardPage />
+                <Dashboard />
               </ProtectedRoute>
             } 
           />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Router>
     </AuthProvider>
