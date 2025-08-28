@@ -6,7 +6,8 @@ import HeroSectionModal from '../components/HeroSectionModal';
 import BlogModal from '../components/BlogModal';
 import LifeInsuranceModal from '../components/LifeInsuranceModal';
 import TestimonialModal from '../components/TestimonialModal';
-import PolicyHolderModal from '../components/PolicyHolderModal'; // New modal
+import PolicyHolderModal from '../components/PolicyHolderModal';
+import PlanModal from '../components/PlanModal';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -27,7 +28,8 @@ const DashboardPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedContent, setSelectedContent] = useState({ text: '', title: '' });
   const [showContentModal, setShowContentModal] = useState(false);
-
+  const [plans, setPlans] = useState([]);
+  const [showPlanModal, setShowPlanModal] = useState(false);
   // Configuration limits
   const LIMIT_HERO = parseInt(process.env.REACT_APP_LIMIT_PER_HERO_SECTION) || 10;
   const LIMIT_BLOG = parseInt(process.env.REACT_APP_LIMIT_PER_BLOG_SECTION) || 10;
@@ -57,14 +59,16 @@ const DashboardPage = () => {
         insuranceRes,
         testimonialRes,
         contactRes,
-        policyHolderRes // New API call
+        policyHolderRes,
+        plansrRes
       ] = await Promise.all([
         axios.get(`${API_BASE_URL}/api/herosection/agent/${agent.id}`),
         axios.get(`${API_BASE_URL}/api/blog/agent/${agent.id}`),
         axios.get(`${API_BASE_URL}/api/lifeinsurance/agent/${agent.id}`),
         axios.get(`${API_BASE_URL}/api/testimonial/agent/${agent.id}`),
         axios.get(`${API_BASE_URL}/api/contactdetail/agent/${agent.id}`),
-        axios.get(`${API_BASE_URL}/api/PolicyHolderDetail/agent/${agent.id}`) // New endpoint
+        axios.get(`${API_BASE_URL}/api/PolicyHolderDetail/agent/${agent.id}`),
+        axios.get(`${API_BASE_URL}/api/plans/agent/${agent.id}`)
       ]);
 
       setHeroSections(heroRes.data.data || []);
@@ -72,7 +76,8 @@ const DashboardPage = () => {
       setLifeInsurances(insuranceRes.data.data || []);
       setTestimonials(testimonialRes.data.data || []);
       setContactDetails(contactRes.data.data || []);
-      setPolicyHolders(policyHolderRes.data.data || []); // Set policy holders
+      setPolicyHolders(policyHolderRes.data.data || []);
+      setPlans(plansrRes.data.data || []);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -124,6 +129,10 @@ const DashboardPage = () => {
       case 'policyholder': // New case
         setShowPolicyHolderModal(true);
         break;
+      case 'plans':
+        setShowPlanModal(true);
+        break;
+
       default:
         break;
     }
@@ -148,6 +157,10 @@ const DashboardPage = () => {
       case 'policyholder': // New case
         setShowPolicyHolderModal(true);
         break;
+      case 'plans':
+        setShowPlanModal(true);
+        break;
+
       default:
         break;
     }
@@ -227,6 +240,7 @@ const DashboardPage = () => {
     switch (tab) {
       case 'hero': return 'Hero Sections';
       case 'blog': return 'Blog Posts';
+      case 'plans': return 'Insurance Plans';
       case 'insurance': return 'Life Insurance';
       case 'testimonial': return 'Testimonials';
       case 'contact': return 'Contact Inquiries';
@@ -295,7 +309,7 @@ const DashboardPage = () => {
         {/* Tab Navigation */}
         <div className="container mx-auto px-4 py-6">
           <div className="flex border-b border-gray-200 mb-6 overflow-x-auto bg-white rounded-xl shadow p-2 space-x-4">
-            {['hero', 'blog', 'insurance', 'testimonial', 'contact', 'policyholder'].map((tab) => (
+            {['hero', 'blog', 'insurance', 'plans', 'testimonial', 'contact', 'policyholder'].map((tab) => (
               <button
                 key={tab}
                 className={`relative px-6 py-3 font-medium text-sm capitalize whitespace-nowrap transition-all ${activeTab === tab
@@ -310,8 +324,8 @@ const DashboardPage = () => {
                 {tab === 'contact' && contactDetails.length > 0 && (
                   <span
                     className="absolute -top-1 -right-1 bg-gradient-to-br from-red-500 to-red-600
-          text-white text-[10px] font-bold rounded-full h-5 w-5
-          flex items-center justify-center shadow-md"
+                    text-white text-[10px] font-bold rounded-full h-5 w-5
+                    flex items-center justify-center shadow-md"
                   >
                     {contactDetails.filter(c => c.status === 'Y').length}
                   </span>
@@ -494,6 +508,62 @@ const DashboardPage = () => {
                               </button>
                               <button
                                 onClick={() => handleDelete(insurance.id, 'insurance')}
+                                className="text-red-600 hover:text-red-900 px-2 py-1 rounded hover:bg-red-50"
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                )}
+                {/* Insurance Plans Table */}
+                {activeTab === 'plans' && (
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Min Sum Assured</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Sum Assured</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {plans.length === 0 ? (
+                        <tr>
+                          <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                            No insurance plans found. Create your first one!
+                          </td>
+                        </tr>
+                      ) : (
+                        plans.map((plan) => (
+                          <tr key={plan.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{plan.id}</td>
+                            <td className="px-6 py-4 text-sm font-semibold text-gray-800">{plan.name}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
+                                {plan.category}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-indigo-700">
+                              {formatCurrency(plan.minSumAssured)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-indigo-700">
+                              {formatCurrency(plan.maxSumAssured)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                              <button
+                                onClick={() => handleEdit(plan, 'plans')}
+                                className="text-indigo-600 hover:text-indigo-900 px-2 py-1 rounded hover:bg-indigo-50"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDelete(plan.id, 'plans')}
                                 className="text-red-600 hover:text-red-900 px-2 py-1 rounded hover:bg-red-50"
                               >
                                 Delete
@@ -783,7 +853,6 @@ const DashboardPage = () => {
           />
         )}
 
-        {/* Content View Modal */}
         {showContentModal && (
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4 backdrop-blur-sm">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 max-h-[90vh] flex flex-col">
@@ -813,6 +882,15 @@ const DashboardPage = () => {
               </div>
             </div>
           </div>
+        )}
+
+        {showPlanModal && (
+          <PlanModal
+            agentId={agent.id}
+            initialData={currentItem}
+            onClose={() => setShowPlanModal(false)}
+            onSubmit={handleModalSubmit}
+          />
         )}
       </div>
       <footer className="bg-gray-900 text-gray-300 py-6 bottom-0 w-full">

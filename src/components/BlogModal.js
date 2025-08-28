@@ -11,7 +11,8 @@ const BlogModal = ({ agentId, initialData, onClose, onSubmit }) => {
     publishedDate: new Date().toISOString().split('T')[0],
     imageUrl: '',
     sortingOrder: '',
-    AgentId: agentId
+    AgentId: agentId,
+    SrcUrl: ''
   });
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000/api';
 
@@ -30,7 +31,8 @@ const BlogModal = ({ agentId, initialData, onClose, onSubmit }) => {
           new Date().toISOString().split('T')[0],
         imageUrl: initialData.imageUrl || '',
         sortingOrder: initialData.sortingOrder || '',
-        AgentId: agentId
+        AgentId: agentId,
+        SrcUrl: initialData.srcUrl || ''
       });
     }
   }, [initialData, agentId]);
@@ -50,7 +52,7 @@ const BlogModal = ({ agentId, initialData, onClose, onSubmit }) => {
         ...formData,
         publishedDate: new Date(formData.publishedDate).toISOString()
       };
-
+      console.log('Submitting payload:', payload);
       if (initialData) {
         // Update existing blog
         await axios.put(`${API_BASE_URL}/api/blog/${initialData.id}`, payload);
@@ -181,6 +183,17 @@ const BlogModal = ({ agentId, initialData, onClose, onSubmit }) => {
                 type="url"
                 name="imageUrl"
                 value={formData.imageUrl}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Source URL</label>
+              <input
+                type="url"
+                name="SrcUrl"
+                value={formData.SrcUrl}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
