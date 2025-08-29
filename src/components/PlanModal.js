@@ -44,44 +44,46 @@ const PlanModal = ({ agentId, initialData, onClose, onSubmit }) => {
     }
   }, [initialData]);
 
-  const fetchPlanOptions = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch(`${API_BASE_URL}api/Plans/planList/${agentId}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch plan options');
-      }
-      
-      const result = await response.json();
-      
-      if (result.status === 200 && result.data) {
-        const { title, plan_Name } = result.data;
-        
-        // Parse the plan_Name string to array
-        const planNames = JSON.parse(plan_Name);
-        
-        // Create mapping of category to plans
-        const categoryPlanMapping = {
-          [title]: planNames
-        };
-        
-        setPlanData(categoryPlanMapping);
-        setCategories([title]);
-        
-        // If we only have one category, set it by default and show its plans
-        if (title) {
-          setFormData(prev => ({ ...prev, category: title }));
-          setFilteredPlans(planNames);
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching plan options:', error);
-      setError('Failed to load plan options');
-    } finally {
-      setIsLoading(false);
+ const fetchPlanOptions = async () => {
+  try {
+    setIsLoading(true);
+    const response = await fetch(`${API_BASE_URL}/api/Plans/planList/${agentId}`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch plan options');
     }
-  };
+    
+    const result = await response.json();
+    
+    if (result.status === 200 && result.data && Array.isArray(result.data)) {
+      const categoryPlanMapping = {};
+      const categoryList = [];
+
+      result.data.forEach(item => {
+        const { title, plan_Name } = item;
+        const planNames = JSON.parse(plan_Name); // JSON_ARRAYAGG returns stringified JSON
+
+        categoryPlanMapping[title] = planNames;
+        categoryList.push(title);
+      });
+
+      setPlanData(categoryPlanMapping);
+      setCategories(categoryList);
+
+      // If we only have one category, auto-select it
+      if (categoryList.length === 1) {
+        const singleCategory = categoryList[0];
+        setFormData(prev => ({ ...prev, category: singleCategory }));
+        setFilteredPlans(categoryPlanMapping[singleCategory]);
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching plan options:', error);
+    setError('Failed to load plan options');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleCategoryChange = (e) => {
     const category = e.target.value;
